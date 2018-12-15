@@ -25,18 +25,29 @@ var config = {
   $("#add-train-btn").on("click", function(event) {
     event.preventDefault();
   
+  
+
     // Grabs user input
     var trainName = $("#train-name-input").val().trim();
     var trainDest = $("#destination-input").val().trim();
-    var trainTime = moment($("#first-train-time-input").val().trim(), "HH").format("X");
+    var trainTime = moment($("#first-train-time-input").val().trim(), "HH:mm").format("HH:mm");
     var trainfrequency = $("#frequency-input").val().trim();
-  
+    
+    var currentTime = moment().format("HH:mm");
+    var firstTimeConverted = moment(currentTime).subtract(1, "years");
+    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    var tRemainder = diffTime % trainfrequency;
+    var tMinutesTillTrain = trainfrequency - tRemainder;
+    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+
+    console.log(nextTrain);
     // Creates local "temporary" object for holding employee data
     var train = {
       name: trainName,
       Destination: trainDest,
       start: trainTime,
-      rate: trainfrequency
+      rate: trainfrequency,
+      nextTrain: nextTrain
     };
   
     // Uploads train data to the database
@@ -47,6 +58,7 @@ var config = {
     console.log(train.Destination);
     console.log(train.start);
     console.log(train.rate);
+    console.log(train.nextTrain);
   
     alert("Employee successfully added");
   
@@ -57,6 +69,10 @@ var config = {
     $("#rate-input").val("");
   });
   
+  $("#train-sched-reset").on("click", function(event){
+    event.preventDefault();  
+    $("tbody").empty();
+  });
   // 3. Create Firebase event for adding employee to the database and a row in the html when a user adds an entry
   database.ref().on("child_added", function(childSnapshot) {
     console.log(childSnapshot.val());
@@ -66,6 +82,7 @@ var config = {
     var trainDest = childSnapshot.val().Destination;
     var trainTime = childSnapshot.val().start;
     var trainfrequency = childSnapshot.val().rate;
+    var nextTrain = childSnapshot.val().nextTrain;
   
     // Employee Info
     console.log(trainName);
@@ -91,6 +108,7 @@ var config = {
       $("<td>").text(trainDest),
       $("<td>").text(trainfrequency),
       $("<td>").text(trainTime),
+      $("<td>").text(nextTrain)
       //$("<td>").text(empRate),
       
     );
