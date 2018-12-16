@@ -1,12 +1,3 @@
-// Steps to complete:
-
-// 1. Initialize Firebase
-// 2. Create button for adding new employees - then update the html + update the database
-// 3. Create a way to retrieve employees from the employee database.
-// 4. Create a way to calculate the months worked. Using difference between start and current time.
-//    Then use moment.js formatting to set difference in months.
-// 5. Calculate Total billed
-
 // 1. Initialize Firebase
 var config = {
     apiKey: "AIzaSyBIbNYqFG3UPJlAfpv-qPk99GFqBIcID78",
@@ -21,7 +12,7 @@ var config = {
   
   var database = firebase.database();
   
-  // 2. Button for adding Employees
+  // 2. Button for adding trains
   $("#add-train-btn").on("click", function(event) {
     event.preventDefault();
   
@@ -33,49 +24,47 @@ var config = {
     var trainTime = moment($("#first-train-time-input").val().trim(), "HH:mm").format("HH:mm");
     var trainfrequency = $("#frequency-input").val().trim();
     
-    var currentTime = moment().format("HH:mm");
-    var firstTimeConverted = moment(currentTime).subtract(1, "years");
+    //Calculate when the next train will come
+    var currentTime = moment();
+    
+    var firstTimeConverted = moment(trainTime, "HH:mm").subtract(1, "years");
+    console.log(firstTimeConverted);
     var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    console.log("DIFFERENCE IN TIME: " + diffTime);
     var tRemainder = diffTime % trainfrequency;
+    console.log(tRemainder);
     var tMinutesTillTrain = trainfrequency - tRemainder;
+    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
     var nextTrain = moment().add(tMinutesTillTrain, "minutes");
-
     console.log(nextTrain);
-    // Creates local "temporary" object for holding employee data
+    nextTrain = moment(nextTrain).format("HH:mm");
+    console.log(nextTrain)
+
+    // Creates local "temporary" object for train data
     var train = {
       name: trainName,
       Destination: trainDest,
-      start: trainTime,
+      start: nextTrain,
       rate: trainfrequency,
-      nextTrain: nextTrain
+      nextTrain: tMinutesTillTrain
     };
   
     // Uploads train data to the database
     database.ref().push(train);
   
-    // Logs everything to console
-    console.log(train.name);
-    console.log(train.Destination);
-    console.log(train.start);
-    console.log(train.rate);
-    console.log(train.nextTrain);
-  
-    alert("Employee successfully added");
-  
     // Clears all of the text-boxes
     $("#employee-name-input").val("");
-    $("#role-input").val("");
-    $("#start-input").val("");
-    $("#rate-input").val("");
+  
   });
   
   $("#train-sched-reset").on("click", function(event){
     event.preventDefault();  
     $("tbody").empty();
+   
   });
   // 3. Create Firebase event for adding employee to the database and a row in the html when a user adds an entry
   database.ref().on("child_added", function(childSnapshot) {
-    console.log(childSnapshot.val());
+    
   
     // Store everything into a variable.
     var trainName = childSnapshot.val().name;
@@ -85,22 +74,13 @@ var config = {
     var nextTrain = childSnapshot.val().nextTrain;
   
     // Employee Info
-    console.log(trainName);
-    console.log(trainDest);
-    console.log(trainTime);
-    console.log(trainfrequency);
+    // console.log(trainName);
+    // console.log(trainDest);
+    // console.log(trainTime);
+    // console.log(trainfrequency);
+    // console.log(nextTrain);
   
-    // Prettify the employee start
-   // var empStartPretty = moment.unix(empStart).format("MM/DD/YYYY");
   
-    // Calculate the months worked using hardcore math
-    // To calculate the months worked
-    //var empMonths = moment().diff(moment(empStart, "X"), "months");
-    //console.log(empMonths);
-  
-    // Calculate the total billed rate
-    //var empBilled = empMonths * empRate;
-    //console.log(empBilled);
   
     // Create the new row
     var newRow = $("<tr>").append(
