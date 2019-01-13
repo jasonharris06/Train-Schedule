@@ -13,6 +13,5 @@ It’s train schedule application that incorporates Firebase to host arrival and
     var nextTrain = moment().add(tMinutesTillTrain, "minutes"); 
     nextTrain = moment(nextTrain).format("HH:mm");
 ```
-
 Run the [Train-Schedule Website](https://jasonharris06.github.io/Train-Schedule/)
 
